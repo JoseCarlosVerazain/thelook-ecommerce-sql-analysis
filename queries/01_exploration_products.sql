@@ -50,3 +50,21 @@ SELECT
 FROM `bigquery-public-data.thelook_ecommerce.products`;
 -- total_rows = unique_ids = non_null_ids
 -- → 'id' is a valid primary key: unique and with no nulls.
+
+
+-- #4 Null coverage across the fields
+SELECT
+  COUNT(*) AS total_rows,
+  COUNTIF(cost IS NULL) AS null_cost,
+  COUNTIF(category IS NULL) AS null_category,
+  COUNTIF(name IS NULL) AS null_name,
+  COUNTIF(brand IS NULL) AS null_brand,
+  COUNTIF(retail_price IS NULL) AS null_retail_price,
+  COUNTIF(department IS NULL) AS null_department,
+  COUNTIF(sku IS NULL) AS null_sku,
+  COUNTIF(distribution_center_id IS NULL) AS null_distribution_center_id
+FROM `bigquery-public-data.thelook_ecommerce.products`;
+-- Full coverage on all fields except:
+--   name  → 2 nulls
+--   brand → 24 nulls
+-- Note: any GROUP BY brand will silently drop those 24 products.
