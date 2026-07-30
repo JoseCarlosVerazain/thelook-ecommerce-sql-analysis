@@ -68,3 +68,22 @@ FROM `bigquery-public-data.thelook_ecommerce.products`;
 --   name  → 2 nulls
 --   brand → 24 nulls
 -- Note: any GROUP BY brand will silently drop those 24 products.
+
+-- #5 Hidden missing values and invalid measures
+SELECT
+  COUNTIF(TRIM(name) = '') AS empty_name,
+  COUNTIF(TRIM(category) = '') AS empty_category,
+  COUNTIF(TRIM(brand) = '') AS empty_brand,
+  COUNTIF(TRIM(department) = '') AS empty_department,
+  COUNTIF(TRIM(sku) = '') AS empty_sku,
+  COUNTIF(cost = 0) AS zero_cost,
+  COUNTIF(retail_price = 0) AS zero_price,
+  COUNTIF(cost < 0) AS negative_cost,
+  COUNTIF(retail_price < 0) AS negative_price,
+  COUNTIF(cost > retail_price) AS cost_above_price
+FROM `bigquery-public-data.thelook_ecommerce.products`;
+-- All checks returned 0:
+--   no empty or whitespace-only strings
+--   no zero or negative values in cost / retail_price
+--   no product priced below its cost
+-- Measures are safe to aggregate without cleaning.
