@@ -87,3 +87,18 @@ FROM `bigquery-public-data.thelook_ecommerce.products`;
 --   no zero or negative values in cost / retail_price
 --   no product priced below its cost
 -- Measures are safe to aggregate without cleaning.
+
+-- #6 Dimension cardinality
+SELECT 
+  COUNT(DISTINCT name) AS distinct_name, 
+  COUNT(DISTINCT category) AS distinct_category, 
+  COUNT(DISTINCT brand) AS distinct_brand, 
+  COUNT(DISTINCT department) AS distinct_department, 
+  COUNT(DISTINCT sku) AS distinct_sku,
+  COUNT(DISTINCT distribution_center_id) AS distribution_center_id
+FROM `bigquery-public-data.thelook_ecommerce.products`;
+-- Low cardinality (safe as grouping axis): 
+-- department = 2, category = 26, distribution_center = 10.
+-- High cardinality: brand, name -> use as filter or top-N, not as axis.
+-- sku = 29,120 = total rows -> sku is a valid alternate key.
+-- name = 27,309 < total rows -> product names repeat.
