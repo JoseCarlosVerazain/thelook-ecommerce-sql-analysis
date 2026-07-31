@@ -102,3 +102,35 @@ FROM `bigquery-public-data.thelook_ecommerce.products`;
 -- High cardinality: brand, name -> use as filter or top-N, not as axis.
 -- sku = 29,120 = total rows -> sku is a valid alternate key.
 -- name = 27,309 < total rows -> product names repeat.
+
+
+
+-- #7 Numeric distribution o measures
+SELECT
+  ROUND(MIN(cost), 2) AS min_cost,
+  ROUND(AVG(cost), 2) AS avg_cost,
+  ROUND(MAX(cost), 2) AS max_cost,
+  ROUND(STDDEV(cost), 2) AS stddev_cost,
+  ROUND(MIN(retail_price), 2) AS min_retail_price,
+  ROUND(MAX(retail_price), 2) AS max_price,
+  ROUND(AVG(retail_price), 2) AS avg_price,
+  ROUND(STDDEV(retail_price), 2) AS stddev_price
+FROM `bigquery-public-data.thelook_ecommerce.products`;
+-- cost:  min 0.01 | avg 28.00 | max 557.15 | stddev 30.00
+-- price: min 0.02 | avg 59.00 | max 999.00 | stddev 65.00
+-- Coefficient of variation (stddev/avg) > 1 on both measures
+-- -> dispersion exceeds the mean. Cause to be confirmed in #7.1.
+
+-- #7.1 Quartiles of measure
+SELECT
+  APPROX_QUANTILES(cost, 4) AS cost_quartiles,
+  APPROX_QUANTILES(retail_price, 4) AS price_quartiles
+FROM `bigquery-public-data.thelook_ecommerce.products`;
+-- cost:  0.01 | 11.24 | 19.72 | 34.43 | 557.15
+-- price: 0.02 | 24.00 | 39.99 | 69.95 | 999.00
+-- Mean sits ~45% above the median on both measures and max is far
+-- beyond Q3 -> right-skewed distribution with a long tail.
+-- Implication: median is the representative value, not the mean.
+-- Median markup = 39.99 / 19.72 = 2.03x (~50% gross margin).
+-- Note: min cost of 0.008 passed the zero-check in #5 but is not a
+--   plausible unit cost. Zero-checks do not catch implausible positives.
